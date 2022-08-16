@@ -126,67 +126,64 @@ def index():
 
 @app.route('/venues')
 def venues():
-    results = Venue.query.distinct(Venue.city, Venue.state).all() # query all distinct cities and states
+    distinct_venues_query = Venue.query.distinct(Venue.city, Venue.state).all() # query all distinct cities and states
     data_dictionary = [] # list of dictionaries
-    for result in results:
-        city_state_unit = {
-            "city": result.city,
-            "state": result.state
+    for venue in distinct_venues_query:
+        city_data = {
+            "city": venue.city,
+            "state": venue.state
         }
-        venues = Venue.query.filter_by(city=result.city, state=result.state).all()
+        all_venues = Venue.query.filter_by(city=venue.city, state=venue.state).all() # query all venues in a city and state
 
         # format each venue
-        formatted_venues = []
-        for venue in venues:
+        formatted_venues = [] # list of formated venues
+        for venue in all_venues:
             formatted_venues.append({
                 "id": venue.id,
                 "name": venue.name,
                 "num_upcoming_shows": len(list(filter(lambda x: x.start_time > datetime.now(), venue.shows)))
             })
         
-        city_state_unit["venues"] = formatted_venues
-        data_dictionary.append(city_state_unit)
+        city_data["venues"] = formatted_venues # add formatted venues to city data
+        data_dictionary.append(city_data)
    
     return render_template('pages/venues.html', areas=data_dictionary)
 
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-    venue = Venue.query.get(venue_id)
-    setattr(venue, "genres", venue.genres.split(",")) # convert genre string back to array
+    query_venue_id = Venue.query.get(venue_id)
+    setattr(query_venue_id, "genres", query_venue_id.genres.split(",")) # convert genre string back to array
 
     # get past shows
-    past_shows = list(filter(lambda show: show.start_time < datetime.now(), venue.shows))
-    temp_shows = []
-    for show in past_shows:
-        temp = {}
-        temp["artist_name"] = show.artists.name
-        temp["artist_id"] = show.artists.id
-        temp["artist_image_link"] = show.artists.image_link
-        temp["start_time"] = show.start_time.strftime("%m/%d/%Y, %H:%M:%S")
-        temp_shows.append(temp)
+    query_past_shows = db.session.query(Show).join(Venue).filter(Show.venue_id == venue_id, Show.start_time < datetime.now()).all()
+    shows = []
+    for show in query_past_shows:
+        show_dict = {} #empty dicitonary
+        show_dict["artist_name"] = show.artists.name
+        show_dict["artist_id"] = show.artists.id
+        show_dict["artist_image_link"] = show.artists.image_link
+        show_dict["start_time"] = show.start_time.strftime("%m/%d/%Y, %H:%M:%S")
+        shows.append(show_dict)
 
-    setattr(venue, "past_shows", temp_shows)
-    setattr(venue,"past_shows_count", len(past_shows))
-
-    # get past shows
-    # past_shows = db.session.query(Show).join(Venue).filter(Show.venue_id == venue_id, Show.start_time < datetime.now()).all()
+    setattr(query_venue_id, "past_shows", shows)
+    setattr(query_venue_id,"past_shows_count", len(query_past_shows))
 
     # get future shows
-    upcoming_shows = list(filter(lambda show: show.start_time > datetime.now(), venue.shows))
-    temp_shows = []
-    for show in upcoming_shows:
-        temp = {}
-        temp["artist_name"] = show.artists.name
-        temp["artist_id"] = show.artists.id
-        temp["artist_image_link"] = show.artists.image_link
-        temp["start_time"] = show.start_time.strftime("%m/%d/%Y, %H:%M:%S")
-        temp_shows.append(temp)
+    query_future_shows = db.session.query(Show).join(Venue).filter(Show.venue_id == venue_id, Show.start_time > datetime.now()).all()
+    shows = []
+    for show in query_future_shows:
+        show_dict = {} #empty dicitonary
+        show_dict["artist_name"] = show.artists.name
+        show_dict["artist_id"] = show.artists.id
+        show_dict["artist_image_link"] = show.artists.image_link
+        show_dict["start_time"] = show.start_time.strftime("%m/%d/%Y, %H:%M:%S")
+        shows.append(show_dict)
 
-    setattr(venue, "upcoming_shows", temp_shows)    
-    setattr(venue,"upcoming_shows_count", len(upcoming_shows))
+    setattr(query_venue_id, "upcoming_shows", shows)    
+    setattr(query_venue_id,"upcoming_shows_count", len(query_future_shows))
 
-    return render_template('pages/show_venue.html', venue=venue)
+    return render_template('pages/show_venue.html', venue=query_venue_id)
 
 #  Create Venue
 #  ----------------------------------------------------------------
