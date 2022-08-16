@@ -114,9 +114,9 @@ def orm_obj_list_to_dict(obj_list):
 
 @app.route('/')
 def index():
-    get_venues = Venue.query.order_by(db.desc(Venue.created_at)).limit(10).all()
-    get_artists = Artist.query.order_by(db.desc(Artist.created_at)).limit(10).all()
-    return render_template('pages/home.html', venues=get_venues, artists=get_artists)
+    venues = Venue.query.order_by(db.desc(Venue.created_at)).limit(10).all()
+    artists = Artist.query.order_by(db.desc(Artist.created_at)).limit(10).all()
+    return render_template('pages/home.html', venues=venues, artists=artists)
 
 
 
@@ -126,28 +126,28 @@ def index():
 
 @app.route('/venues')
 def venues():
-    dataArray = []
-    query = Venue.query.distinct(Venue.city, Venue.state).all() #query all distinct cities and states
-    for result in query:
-        cityObject = {
+    data = []
+    results = Venue.query.distinct(Venue.city, Venue.state).all()
+    for result in results:
+        city_state_unit = {
             "city": result.city,
             "state": result.state
         }
-        allVenues = Venue.query.filter_by(city=result.city, state=result.state).all() #query all venues in a city and state
+        venues = Venue.query.filter_by(city=result.city, state=result.state).all()
 
         # format each venue
-        formattedVenuesArray = []
-        for venue in allVenues:
-            formattedVenuesArray.append({
+        formatted_venues = []
+        for venue in venues:
+            formatted_venues.append({
                 "id": venue.id,
                 "name": venue.name,
                 "num_upcoming_shows": len(list(filter(lambda x: x.start_time > datetime.now(), venue.shows)))
             })
         
-        cityObject["venues"] = formattedVenuesArray #add the venues to city object
-        dataArray.append(cityObject) #add the city and state to the data array
+        city_state_unit["venues"] = formatted_venues
+        data.append(city_state_unit)
    
-    return render_template('pages/venues.html', areas=dataArray)
+    return render_template('pages/venues.html', areas=data)
 
 
 @app.route('/venues/<int:venue_id>')
