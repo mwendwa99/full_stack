@@ -114,9 +114,9 @@ def orm_obj_list_to_dict(obj_list):
 
 @app.route('/')
 def index():
-    venues = Venue.query.order_by(db.desc(Venue.created_at)).limit(10).all()
-    artists = Artist.query.order_by(db.desc(Artist.created_at)).limit(10).all()
-    return render_template('pages/home.html', venues=venues, artists=artists)
+    venues_query = Venue.query.order_by(db.desc(Venue.created_at)).limit(10).all()
+    artists_query = Artist.query.order_by(db.desc(Artist.created_at)).limit(10).all()
+    return render_template('pages/home.html', venues=venues_query, artists=artists_query)
 
 
 
