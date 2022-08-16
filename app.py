@@ -126,8 +126,8 @@ def index():
 
 @app.route('/venues')
 def venues():
-    data = []
-    results = Venue.query.distinct(Venue.city, Venue.state).all()
+    results = Venue.query.distinct(Venue.city, Venue.state).all() # query all distinct cities and states
+    data_dictionary = [] # list of dictionaries
     for result in results:
         city_state_unit = {
             "city": result.city,
@@ -145,9 +145,9 @@ def venues():
             })
         
         city_state_unit["venues"] = formatted_venues
-        data.append(city_state_unit)
+        data_dictionary.append(city_state_unit)
    
-    return render_template('pages/venues.html', areas=data)
+    return render_template('pages/venues.html', areas=data_dictionary)
 
 
 @app.route('/venues/<int:venue_id>')
