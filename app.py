@@ -534,21 +534,21 @@ def search_artists():
 
 @app.route('/shows')
 def shows():
-    data = []
+    shows_data = []
 
-    shows = Show.query.all()
-    for show in shows:
-        temp = {}
-        temp["venue_id"] = show.venues.id
-        temp["venue_name"] = show.venues.name
-        temp["artist_id"] = show.artists.id
-        temp["artist_name"] = show.artists.name
-        temp["artist_image_link"] = show.artists.image_link
-        temp["start_time"] = show.start_time.strftime("%m/%d/%Y, %H:%M:%S")
+    query_all_shows = Show.query.all()
+    for show in query_all_shows:
+        show_dict = {}
+        show_dict["venue_id"] = show.venues.id
+        show_dict["venue_name"] = show.venues.name
+        show_dict["artist_id"] = show.artists.id
+        show_dict["artist_name"] = show.artists.name
+        show_dict["artist_image_link"] = show.artists.image_link
+        show_dict["start_time"] = show.start_time.strftime("%m/%d/%Y, %H:%M:%S")
         
-        data.append(temp)
+        shows_data.append(show_dict)
     
-    return render_template('pages/shows.html', shows=data)
+    return render_template('pages/shows.html', shows=shows_data)
 
 
 @app.route('/shows/create')
