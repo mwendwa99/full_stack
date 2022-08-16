@@ -308,26 +308,26 @@ def delete_venue(venue_id):
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-    search_term = request.form.get("search_term", "")
+    search_param = request.form.get("search_term", "") # get search parameters from form
 
     response = {}
-    venues = list(Venue.query.filter(
-        Venue.name.ilike(f"%{search_term}%") |
-        Venue.state.ilike(f"%{search_term}%") |
-        Venue.city.ilike(f"%{search_term}%") 
+    venues_list = list(Venue.query.filter(
+        Venue.name.ilike(f"%{search_param}%") |
+        Venue.state.ilike(f"%{search_param}%") |
+        Venue.city.ilike(f"%{search_param}%") 
     ).all())
-    response["count"] = len(venues)
+    response["count"] = len(venues_list)
     response["data"] = []
 
-    for venue in venues:
-        venue_unit = {
+    for venue in venues_list:
+        venue_dict = {
             "id": venue.id,
             "name": venue.name,
             "num_upcoming_shows": len(list(filter(lambda x: x.start_time > datetime.now(), venue.shows)))
         }
-        response["data"].append(venue_unit)
+        response["data"].append(venue_dict)
 
-    return render_template('pages/search_venues.html', results=response, search_term=search_term)
+    return render_template('pages/search_venues.html', results=response, search_term=search_param)
 
 
 
@@ -375,7 +375,7 @@ def show_artist(artist_id):
 
         upcoming_shows.append(show_dict)
 
-    setattr(artist_query, "upcoming_shows", upcoming_shows)   
+    setattr(artist_query, "upcoming_shows", upcoming_shows)
     setattr(artist_query, "upcoming_shows_count", len(upcoming_shows))
 
     return render_template('pages/show_artist.html', artist=artist_query)
